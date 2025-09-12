@@ -67,6 +67,7 @@ function initiatePanel(proxySettings) {
     renderUdpNoiseBlock(xrayUdpNoises);
     initiateForm();
     fetchIPInfo();
+    fetchProxyIPs(); // 初始化时获取Proxy IP列表
 }
 
 function populatePanel(proxySettings) {
@@ -931,4 +932,94 @@ function renderUdpNoiseBlock(xrayUdpNoises) {
         addUdpNoise(false, index, noise);
     });
     globalThis.xrayNoiseCount = xrayUdpNoises.length;
+}
+
+// 获取Proxy IP列表
+async function fetchProxyIPs() {
+    const refreshBtn = document.getElementById("refreshProxyIPs").querySelector('span');
+    refreshBtn.classList.add('fa-spin');
+    
+    try {
+        const response = await fetch('https://raw.githubusercontent.com/happymy/Pip_Json_DEMO2/refs/heads/main/output.json', { cache: "no-store" });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        populateProxyIPSelector(data);
+    } catch (error) {
+        console.error("获取Proxy IP列表失败:", error.message || error);
+        alert('⚠️ 获取Proxy IP列表失败，请稍后重试！');
+    } finally {
+        refreshBtn.classList.remove('fa-spin');
+    }
+}
+
+// 手动刷新Proxy IP列表
+function refreshProxyIPs() {
+    fetchProxyIPs();
+}
+
+// 填充Proxy IP选择器
+function populateProxyIPSelector(ipData) {
+    const selector = document.getElementById('proxyIPSelector');
+    
+    // 清空现有选项（保留前两个选项）
+    while (selector.options.length > 2) {
+        selector.remove(2);
+    }
+    
+    // 按国家分组和排序
+    const countries = {};
+    ipData.forEach(item => {
+        if (item.country && item.ip) {
+            if (!countries[item.country]) {
+                countries[item.country] = [];
+            }
+            countries[item.country].push(item);
+        }
+    });
+    
+    // 按国家名称排序
+    const sortedCountries = Object.keys(countries).sort();
+    
+    // 添加国家分组选项
+    sortedCountries.forEach(country => {
+        const countryOption = document.createElement('optgroup');
+        countryOption.label = country;
+        
+        // 按IP地址排序
+        countries[country].sort((a, b) => a.ip.localeCompare(b.ip));
+        
+        // 添加该国家的所有IP选项
+        countries[country].forEach(item => {
+            const option = document.createElement('option');
+            option.value = item.ip;
+            option.textContent = `${item.ip} (${item.country})`;
+            countryOption.appendChild(option);
+        });
+        
+        selector.appendChild(countryOption);
+    });
+}
+
+// 处理Proxy IP选择
+function handleProxyIPSelect() {
+    const selector = document.getElementById('proxyIPSelector');
+    const textarea = document.getElementById('proxyIPs');
+    const selectedValue = selector.value;
+    
+    if (selectedValue === 'manual') {
+        // 手动输入模式
+        textarea.disabled = false;
+        textarea.value = '';
+        textarea.focus();
+    } else if (selectedValue) {
+        // 选择了具体的IP
+        textarea.disabled = false;
+        textarea.value = selectedValue;
+    } else {
+        // 清空选择
+        textarea.disabled = false;
+        textarea.value = '';
+    }
 }
