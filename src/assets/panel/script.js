@@ -3,7 +3,8 @@ localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('d
 // 获取并填充Proxy IP下拉框
 async function loadProxyIPs() {
     try {
-        const response = await fetch('https://raw.githubusercontent.com/happymy/Pip_Json_DEMO2/refs/heads/main/output.json');
+        // 从本地demo.json文件加载数据
+        const response = await fetch('../../../Desktop/demo.json');
         const data = await response.json();
         populateProxyIPSelector(data);
     } catch (error) {
@@ -17,10 +18,17 @@ function populateProxyIPSelector(ipData) {
     selector.innerHTML = '<option value="">-- 请选择Proxy IP --</option>';
     
     if (Array.isArray(ipData)) {
-        ipData.forEach(ip => {
+        ipData.forEach(item => {
             const option = document.createElement('option');
-            option.value = ip;
-            option.textContent = ip;
+            // 处理对象格式的数据（包含ip和location）
+            if (typeof item === 'object' && item.ip) {
+                option.value = item.ip;
+                option.textContent = `${item.ip} (${item.location || '未知位置'})`;
+            } else if (typeof item === 'string') {
+                // 处理字符串格式的IP
+                option.value = item;
+                option.textContent = item;
+            }
             selector.appendChild(option);
         });
     } else if (typeof ipData === 'object') {
