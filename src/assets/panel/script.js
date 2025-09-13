@@ -1,5 +1,73 @@
 localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
 
+// 获取并填充Proxy IP下拉框
+async function loadProxyIPs() {
+    try {
+        const response = await fetch('https://raw.githubusercontent.com/happymy/Pip_Json_DEMO2/refs/heads/main/output.json');
+        const data = await response.json();
+        populateProxyIPSelector(data);
+    } catch (error) {
+        console.error('Failed to load proxy IPs:', error);
+    }
+}
+
+// 填充下拉框选项
+function populateProxyIPSelector(ipData) {
+    const selector = document.getElementById('proxyIPSelector');
+    selector.innerHTML = '<option value="">-- 请选择Proxy IP --</option>';
+    
+    if (Array.isArray(ipData)) {
+        ipData.forEach(ip => {
+            const option = document.createElement('option');
+            option.value = ip;
+            option.textContent = ip;
+            selector.appendChild(option);
+        });
+    } else if (typeof ipData === 'object') {
+        // 处理对象格式的数据
+        Object.values(ipData).forEach(ip => {
+            const option = document.createElement('option');
+            option.value = ip;
+            option.textContent = ip;
+            selector.appendChild(option);
+        });
+    }
+}
+
+// 处理下拉框选择事件
+function handleProxyIPSelect() {
+    const selector = document.getElementById('proxyIPSelector');
+    const textarea = document.getElementById('proxyIPs');
+    const selectedIP = selector.value;
+    
+    if (selectedIP) {
+        // 获取当前textarea的值
+        const currentValue = textarea.value.trim();
+        let ips = currentValue ? currentValue.split('\n') : [];
+        
+        // 如果IP不在列表中，则添加
+        if (!ips.includes(selectedIP)) {
+            ips.push(selectedIP);
+            textarea.value = ips.join('\n');
+            
+            // 自动调整textarea高度
+            textarea.style.height = 'auto';
+            textarea.style.height = `${textarea.scrollHeight}px`;
+            
+            // 触发表单变化检测
+            enableApplyButton();
+        }
+        
+        // 重置选择器
+        selector.value = '';
+    }
+}
+
+// 页面加载完成后获取Proxy IP数据
+document.addEventListener('DOMContentLoaded', function() {
+    loadProxyIPs();
+});
+
 const form = document.getElementById("configForm");
 const [
     selectElements,

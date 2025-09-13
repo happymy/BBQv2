@@ -144,6 +144,20 @@
                                 </div>
                             </div>
                             <div class="form-control">
+                                <label for="proxyIPSelector">
+                                    📍 选择Proxy IP
+                                    <a class="scanner" href="https://raw.githubusercontent.com/happymy/Pip_Json_DEMO2/refs/heads/main/output.json"
+                                        title="Proxy IP列表" target="_blank" rel="noopener noreferrer">
+                                        <span class="material-symbols-rounded">open_in_new</span>
+                                    </a>
+                                </label>
+                                <div>
+                                    <select id="proxyIPSelector" onchange="handleProxyIPSelect()">
+                                        <option value="">-- 请选择Proxy IP --</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-control">
                                 <label for="proxyIPs">
                                     📍 Proxy IPs / Domains
                                     <a class="scanner"
